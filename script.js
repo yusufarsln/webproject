@@ -1,16 +1,157 @@
-let cart = JSON.parse(localStorage.getItem('babyMallCart')) || [];
 
-function updateCartCount() {
-    const countElement = document.getElementById('cart-count');
-    if (countElement) {
+// VERİ
+let cart = JSON.parse(localStorage.getItem('babyMallCart')) || [];
+let wishlist = JSON.parse(localStorage.getItem('babyMallWishlist')) || [];
+
+function updateCounts() {
+    const cartCountEl = document.getElementById('cart-count');
+    if (cartCountEl) {
         let totalItems = 0;
         cart.forEach(item => totalItems += item.quantity);
-        countElement.textContent = totalItems;
+        cartCountEl.textContent = totalItems;
+    }
+
+    const wishListCount = document.getElementById('wishlist-count');
+    if (wishListCount) {
+        wishListCount.textContent = wishlist.length;
     }
 }
-document.addEventListener('DOMContentLoaded', updateCartCount);
 
-// --- ÜRÜN LİSTELEME ---
+// BİLDİRİM FONKSİYONU
+function notification(message, type = 'success') {
+    const container = document.getElementById('not-container');
+
+    let activeContainer = container;
+    if (!activeContainer) {
+        activeContainer = document.createElement('div');
+        activeContainer.id = 'not-container';
+        document.body.appendChild(activeContainer);
+    }
+
+    const not = document.createElement('div');
+    not.className = `not ${type}`;
+    const icon = type === 'success' ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-exclamation-circle"></i>';
+    not.innerHTML = `${icon} <span>${message}</span>`;
+
+    activeContainer.appendChild(not);
+
+    setTimeout(() => {
+        not.remove();
+    }, 3500);
+}
+
+// FAVORİ İŞLEMLERİ
+function toggleWishlist(id, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    const index = wishlist.indexOf(id);
+    const buttons = document.querySelectorAll(`.btn-wishlist[data-id="${id}"], .detail-wishlist-btn[data-id="${id}"]`);
+
+    if (index > -1) {
+        wishlist.splice(index, 1);
+        notification("Favorilerden çıkarıldı.", "error");
+
+        buttons.forEach(btn => {
+            btn.classList.remove('active');
+            btn.innerHTML = '<i class="far fa-heart"></i>';
+        });
+    } else {
+        wishlist.push(id);
+        notification("Favorilere eklendi!", "success");
+
+        buttons.forEach(btn => {
+            btn.classList.add('active');
+            btn.innerHTML = '<i class="fas fa-heart"></i>';
+        });
+    }
+
+    localStorage.setItem('babyMallWishlist', JSON.stringify(wishlist));
+    updateCounts();
+
+    if (window.location.pathname.includes('favorites.html')) {
+        showFavorites();
+    }
+}
+
+// DİNAMİK MENÜ
+function generateMenu() {
+    const menuContainer = document.getElementById('dynamic-menu');
+    if (!menuContainer) return;
+
+    let menuHTML = `<li><a href="index.html">Ana Sayfa</a></li>`;
+    const genders = [...new Set(products.map(p => p.gender))];
+
+    genders.forEach(gender => {
+        const genderProducts = products.filter(p => p.gender === gender);
+        const categories = [...new Set(genderProducts.map(p => p.category))];
+
+        menuHTML += `
+            <li>
+                <a href="products.html?gender=${gender}">${gender} <i class="fas fa-chevron-down" style="font-size:10px; margin-left:5px;"></i></a>
+                <ul class="dropdown-menu">
+                    <li><a href="products.html?gender=${gender}">Tüm ${gender} Ürünleri</a></li>
+                    ${categories.map(category => `
+                        <li><a href="products.html?gender=${gender}&category=${encodeURIComponent(category)}">${category}</a></li>
+                    `).join('')}
+                </ul>
+            </li>
+        `;
+    });
+
+    menuHTML += `
+        <li><a href="products.html">Tüm Ürünler</a></li>
+        <li><a href="about.html">Hakkımızda</a></li>
+        <li><a href="contact.html">İletişim</a></li>
+    `;
+
+    menuContainer.innerHTML = menuHTML;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    updateCounts();
+    generateMenu();
+});
+
+// FAVORİLER
+const favoritesGrid = document.getElementById('favorites-grid');
+
+function showFavorites() {
+    if (!favoritesGrid) return;
+    favoritesGrid.innerHTML = '';
+
+    const favProducts = products.filter(p => wishlist.includes(p.id));
+
+    if (favProducts.length === 0) {
+        favoritesGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 50px;">Favori listeniz henüz boş.</p>';
+        return;
+    }
+
+    favProducts.forEach(product => {
+        const html = `
+            <a href="product-detail.html?id=${product.id}" class="product-card">
+                <button class="btn-wishlist active" data-id="${product.id}" onclick="toggleWishlist(${product.id}, event)">
+                    <i class="fas fa-heart"></i>
+                </button>
+                <img src="${product.image}" class="product-image" alt="${product.name}">
+                <div class="product-info">
+                    <span style="font-size:12px; color:#888;">${product.gender} / ${product.category}</span>
+                    <h3 class="product-title">${product.name}</h3>
+                    <div class="product-price">${product.price} TL</div>
+                </div>
+            </a>
+        `;
+        favoritesGrid.innerHTML += html;
+    });
+}
+
+if (favoritesGrid) {
+    showFavorites();
+}
+
+// ÜRÜN LİSTELEME
 const productGrid = document.getElementById('product-grid');
 
 function renderProducts(list) {
@@ -18,15 +159,23 @@ function renderProducts(list) {
     productGrid.innerHTML = '';
 
     if (list.length === 0) {
-        productGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">Ürün bulunamadı.</p>';
+        productGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 50px;">Aradığınız kriterlere uygun ürün bulunamadı.</p>';
         return;
     }
 
     list.forEach(product => {
+        const isFavorite = wishlist.includes(product.id);
+        const activeClass = isFavorite ? 'active' : '';
+        const heartIcon = isFavorite ? 'fas fa-heart' : 'far fa-heart';
+
         const html = `
             <a href="product-detail.html?id=${product.id}" class="product-card">
+                <button class="btn-wishlist ${activeClass}" data-id="${product.id}" onclick="toggleWishlist(${product.id}, event)">
+                    <i class="${heartIcon}"></i>
+                </button>
                 <img src="${product.image}" class="product-image" alt="${product.name}">
                 <div class="product-info">
+                    <span style="font-size:12px; color:#888;">${product.gender} / ${product.category}</span>
                     <h3 class="product-title">${product.name}</h3>
                     <div class="product-price">${product.price} TL</div>
                 </div>
@@ -37,29 +186,40 @@ function renderProducts(list) {
 }
 
 if (productGrid) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paramGender = urlParams.get('gender');
+    const paramCategory = urlParams.get('category');
+
+    const genderSelect = document.getElementById('genderFilter');
+    const categorySelect = document.getElementById('categoryFilter');
+
+    if (paramGender && genderSelect) genderSelect.value = paramGender;
+    if (paramCategory && categorySelect) categorySelect.value = paramCategory;
+
+    function filterProducts() {
+        if (!document.getElementById('genderFilter')) return;
+
+        const gender = document.getElementById('genderFilter').value;
+        const category = document.getElementById('categoryFilter').value;
+        const color = document.getElementById('colorFilter').value;
+        const sort = document.getElementById('sortFilter').value;
+
+        let filtered = products.filter(p => {
+            return (gender === 'all' || p.gender === gender) &&
+                (category === 'all' || p.category === category) &&
+                (color === 'all' || p.color === color);
+        });
+
+        if (sort === 'price-asc') filtered.sort((a, b) => a.price - b.price);
+        if (sort === 'price-desc') filtered.sort((a, b) => b.price - a.price);
+
+        renderProducts(filtered);
+    }
+
     if (document.title.includes("Ana Sayfa")) {
         renderProducts(products.slice(0, 4));
     } else {
-        renderProducts(products);
-
-        function filterProducts() {
-            const gender = document.getElementById('genderFilter').value;
-            const category = document.getElementById('categoryFilter').value;
-            const color = document.getElementById('colorFilter').value;
-            const sort = document.getElementById('sortFilter').value;
-
-            let filtered = products.filter(p => {
-                return (gender === 'all' || p.gender === gender) &&
-                    (category === 'all' || p.category === category) &&
-                    (color === 'all' || p.color === color);
-            });
-
-            if (sort === 'price-asc') filtered.sort((a, b) => a.price - b.price);
-            if (sort === 'price-desc') filtered.sort((a, b) => b.price - a.price);
-
-            renderProducts(filtered);
-        }
-
+        filterProducts();
         const filters = ['genderFilter', 'categoryFilter', 'sortFilter', 'colorFilter'];
         filters.forEach(id => {
             const el = document.getElementById(id);
@@ -68,7 +228,7 @@ if (productGrid) {
     }
 }
 
-// --- ÜRÜN DETAY SAYFASI ---
+// ÜRÜN DETAY SAYFASI
 const detailContainer = document.getElementById('product-detail-container');
 
 if (detailContainer) {
@@ -87,6 +247,10 @@ if (detailContainer) {
             sizeHtml = `<div class="size-box active" onclick="selectSize(this)">Standart</div>`;
         }
 
+        const isFavorite = wishlist.includes(product.id);
+        const activeClass = isFavorite ? 'active' : '';
+        const heartIcon = isFavorite ? 'fas fa-heart' : 'far fa-heart';
+
         detailContainer.innerHTML = `
             <div class="detail-wrapper">
                 <div class="detail-image">
@@ -99,6 +263,7 @@ if (detailContainer) {
                     
                     <p class="detail-desc">
                         Bu ürün %100 pamuklu kumaştan üretilmiştir. Çocuğunuzun cildine zarar vermez.
+                        Renk: <strong>${product.color}</strong>
                     </p>
                     
                     <div class="option-group">
@@ -108,7 +273,12 @@ if (detailContainer) {
                         </div>
                     </div>
 
-                    <button class="btn-add-detail" onclick="addToCartDetail(${product.id})">Sepete Ekle</button>
+                    <div class="action-buttons">
+                        <button class="btn-add-detail" onclick="addToCartDetail(${product.id})">Sepete Ekle</button>
+                        <button class="detail-wishlist-btn ${activeClass}" data-id="${product.id}" onclick="toggleWishlist(${product.id}, event)">
+                            <i class="${heartIcon}"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -130,7 +300,7 @@ function addToCartDetail(id) {
     const activeSizeBox = document.querySelector('.size-box.active');
 
     if (!activeSizeBox) {
-        alert("Lütfen bir beden seçiniz.");
+        notification("Lütfen bir beden seçiniz!", "error");
         return;
     }
 
@@ -151,10 +321,11 @@ function addToCartDetail(id) {
     }
 
     localStorage.setItem('babyMallCart', JSON.stringify(cart));
-    updateCartCount();
+    updateCounts();
+    notification("Ürün sepete eklendi!", "success");
 }
 
-// --- SEPET SAYFASI ---
+// SEPET SAYFASI
 const cartContainer = document.getElementById('cart-container');
 
 function renderCart() {
@@ -173,7 +344,6 @@ function renderCart() {
     }
 
     let totalPrice = 0;
-
     let itemsHtml = '<div class="cart-items-list">';
     cart.forEach((item, index) => {
         let itemTotal = item.price * item.quantity;
@@ -187,9 +357,9 @@ function renderCart() {
                     <div class="cart-item-variant">Beden: ${item.size}</div>
                     <div class="cart-item-price">${item.price} TL</div>
                     <div class="qty-control">
-                        <button class="qty-btn" onclick="changeQty(${index}, -1)">-</button>
+                        <button class="qty-btn" onclick="changeQuantity(${index}, -1)">-</button>
                         <span class="qty-val">${item.quantity}</span>
-                        <button class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
+                        <button class="qty-btn" onclick="changeQuantity(${index}, 1)">+</button>
                     </div>
                 </div>
                 <div class="item-actions">
@@ -239,34 +409,34 @@ if (cartContainer) {
 }
 
 function checkout() {
-    alert("Siparişiniz alındı! Teşekkür ederiz.");
-
+    notification("Siparişiniz alındı! Teşekkür ederiz.", "success");
     setTimeout(() => {
         cart = [];
         localStorage.setItem('babyMallCart', JSON.stringify(cart));
         renderCart();
-        updateCartCount();
+        updateCounts();
     }, 1500);
 }
 
-function changeQty(index, delta) {
+function changeQuantity(index, delta) {
     cart[index].quantity += delta;
     if (cart[index].quantity < 1) {
         cart[index].quantity = 1;
     }
     localStorage.setItem('babyMallCart', JSON.stringify(cart));
     renderCart();
-    updateCartCount();
+    updateCounts();
 }
 
 function removeItem(index) {
     cart.splice(index, 1);
     localStorage.setItem('babyMallCart', JSON.stringify(cart));
     renderCart();
-    updateCartCount();
+    updateCounts();
+    notification("Ürün sepetten silindi.", "error");
 }
 
-// --- SLIDER ---
+// SLIDER
 const slides = document.querySelectorAll('.slide');
 const nextBtn = document.querySelector('.next-btn');
 const prevBtn = document.querySelector('.prev-btn');
@@ -318,12 +488,12 @@ if (slides.length > 0) {
     startInterval();
 }
 
-// --- İLETİŞİM ---
+// İLETİŞİM
 const contactForm = document.getElementById('contactForm');
 if (contactForm) {
     contactForm.addEventListener('submit', function (e) {
         e.preventDefault();
-        alert("Mesajınız başarıyla gönderildi!");
+        notification("Mesajınız başarıyla gönderildi!", "success");
         contactForm.reset();
     });
 }

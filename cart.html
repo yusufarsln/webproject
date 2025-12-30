@@ -9,20 +9,23 @@
 </head>
 
 <body>
+    <div id="not-container"></div>
+
     <header>
         <div class="container">
             <a href="index.html" class="logo">BabyMall</a>
             <nav>
-                <ul>
-                    <li><a href="index.html">Ana Sayfa</a></li>
-                    <li><a href="products.html">Ürünler</a></li>
-                    <li><a href="about.html">Hakkında</a></li>
-                    <li><a href="contact.html">İletişim</a></li>
-                </ul>
+                <ul id="dynamic-menu"></ul>
             </nav>
-            <div class="cart-icon-wrapper">
-                <i class="fas fa-shopping-cart"></i>
-                <span id="cart-count">0</span>
+            <div class="header-icons">
+                <a href="favorites.html" class="icon-wrapper wishlist-icon">
+                    <i class="fas fa-heart"></i>
+                    <span id="wishlist-count" class="badge-count">0</span>
+                </a>
+                <a href="cart.html" class="icon-wrapper">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span id="cart-count" class="badge-count">0</span>
+                </a>
             </div>
         </div>
     </header>
@@ -40,7 +43,7 @@
                 <div class="social-links">
                     <a href="#"><i class="fab fa-facebook-f"></i></a>
                     <a href="#"><i class="fab fa-instagram"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-x-twitter"></i></a>
                 </div>
             </div>
 

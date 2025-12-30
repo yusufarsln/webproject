@@ -1,4 +1,4 @@
-/* --- GENEL AYARLAR --- */
+/* GENEL AYARLAR */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -21,7 +21,7 @@ main {
 
 a {
     text-decoration: none;
-    color: black;
+    color: inherit;
     transition: 0.3s;
 }
 
@@ -35,12 +35,13 @@ ul {
     margin: 0 auto;
 }
 
+/* HEADER */
 header {
     background-color: #fff;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: 1000;
 }
 
 header .container {
@@ -56,41 +57,174 @@ header .container {
     color: #ff6b6b;
 }
 
-nav ul {
+nav {
+    height: 100%;
+}
+
+nav>ul {
     display: flex;
+    height: 100%;
+    align-items: center;
 }
 
-nav ul li {
+nav>ul>li {
     position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
 }
 
-nav ul li a {
-    padding: 20px 15px;
-    display: block;
+nav>ul>li>a {
+    padding: 0 15px;
     font-weight: 500;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    transition: color 0.3s;
 }
 
-nav ul li a:hover {
+nav>ul>li:hover>a {
     color: #ff6b6b;
 }
 
-.cart-icon-wrapper {
+/* Dropdown */
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 200px;
+    border-radius: 0 0 8px 8px;
+    overflow: hidden;
+    z-index: 1001;
+    border-top: 3px solid #ff6b6b;
+}
+
+nav>ul>li:hover .dropdown-menu {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+.dropdown-menu li {
+    width: 100%;
+}
+
+.dropdown-menu li a {
+    display: block;
+    padding: 12px 20px;
+    font-size: 14px;
+    color: #333;
+    border-bottom: 1px solid #f0f0f0;
+    height: auto;
+}
+
+.dropdown-menu li a:hover {
+    background-color: #f9f9f9;
+    color: #ff6b6b;
+    padding-left: 25px;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Header Icons */
+.header-icons {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.icon-wrapper {
     position: relative;
     font-size: 20px;
     color: #333;
+    cursor: pointer;
+    transition: color 0.3s;
 }
 
-#cart-count {
+.icon-wrapper:hover {
+    color: #ff6b6b;
+}
+
+.icon-wrapper.wishlist-icon:hover {
+    color: #ff4757;
+}
+
+.badge-count {
     position: absolute;
     top: -8px;
     right: -8px;
     background-color: #ff6b6b;
     color: white;
-    font-size: 12px;
-    padding: 2px 6px;
+    font-size: 11px;
+    padding: 2px 5px;
     border-radius: 50%;
+    min-width: 18px;
+    text-align: center;
+    font-weight: bold;
 }
 
+/* Bildirim */
+#not-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.not {
+    background-color: #333;
+    color: #fff;
+    padding: 15px 25px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    transform: translateX(100%);
+    animation: slideIn 0.5s forwards, fadeOut 0.5s forwards 3s;
+}
+
+.not.success {
+    background-color: #2ecc71;
+}
+
+.not.error {
+    background-color: #e74c3c;
+}
+
+.not i {
+    font-size: 18px;
+}
+
+@keyframes slideIn {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
+
+/* SLIDER */
 .slider-container {
     position: relative;
     width: 100%;
@@ -105,7 +239,7 @@ nav ul li a:hover {
     height: 100%;
     opacity: 0;
     transition: opacity 1s ease-in-out;
-    background-size: contain;
+    background-size: cover;
     background-position: center;
     display: flex;
     align-items: center;
@@ -127,7 +261,7 @@ nav ul li a:hover {
 }
 
 .slide h2 {
-    font-size: 45px;
+    font-size: 3rem;
     margin-bottom: 10px;
 }
 
@@ -170,7 +304,7 @@ nav ul li a:hover {
     right: 20px;
 }
 
-/* --- HİZMETLER BÖLÜMÜ --- */
+/* Özellikler */
 .features-section {
     padding: 50px 0;
     background-color: #fff;
@@ -198,7 +332,7 @@ nav ul li a:hover {
     color: #333;
 }
 
-/* --- FİLTRELEME --- */
+/* Filtreleme */
 .filter-bar {
     background: #fff;
     padding: 20px 0;
@@ -220,7 +354,6 @@ nav ul li a:hover {
     background-color: #f8f9fa;
     border: 1px solid #e9ecef;
     border-radius: 8px;
-
     font-size: 14px;
     color: #555;
     cursor: pointer;
@@ -240,7 +373,7 @@ nav ul li a:hover {
     background-color: #fff;
 }
 
-/* --- ÜRÜN KARTLARI --- */
+/* Ürünler */
 .product-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -260,6 +393,7 @@ nav ul li a:hover {
     cursor: pointer;
     text-decoration: none;
     color: inherit;
+    position: relative;
 }
 
 .product-card:hover {
@@ -293,7 +427,38 @@ nav ul li a:hover {
     font-size: 18px;
 }
 
-/* --- ÜRÜN DETAY SAYFASI --- */
+.btn-wishlist {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #eee;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-size: 18px;
+    color: #ccc;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.btn-wishlist:hover {
+    transform: scale(1.1);
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-wishlist.active {
+    color: #ff4757;
+    border-color: #ff4757;
+}
+
+/* ÜRÜN DETAY */
 .detail-wrapper {
     display: flex;
     gap: 50px;
@@ -409,7 +574,6 @@ nav ul li a:hover {
     transition: 0.3s;
     font-weight: bold;
     display: inline-block;
-    margin-top: 20px;
 }
 
 .btn-add-detail:hover {
@@ -417,7 +581,39 @@ nav ul li a:hover {
     transform: scale(1.02);
 }
 
-/* --- SEPET --- */
+.action-buttons {
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.detail-wishlist-btn {
+    background: #fff;
+    border: 2px solid #eee;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    color: #ccc;
+    font-size: 24px;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-left: 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.detail-wishlist-btn:hover {
+    border-color: #ff4757;
+    color: #ff4757;
+}
+
+.detail-wishlist-btn.active {
+    color: #ff4757;
+    border-color: #ff4757;
+}
+
+/* SEPET */
 .cart-layout {
     display: flex;
     gap: 30px;
@@ -578,7 +774,7 @@ nav ul li a:hover {
     box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
 }
 
-/* --- HAKKINDA --- */
+/* Hakkında & İletişim */
 .about-hero {
     background-color: #ffeaa7;
     padding: 60px 0;
@@ -613,7 +809,6 @@ nav ul li a:hover {
     margin-bottom: 15px;
 }
 
-/* --- İLETİŞİM --- */
 .contact-wrapper {
     display: flex;
     gap: 40px;
@@ -655,13 +850,12 @@ nav ul li a:hover {
     font-size: 16px;
 }
 
-/* --- FOOTER --- */
+/* FOOTER */
 footer {
     background-color: #222;
     color: #bbb;
     padding-top: 60px;
     margin-top: auto;
-    /* Sayfanın en altına itmek için */
     font-size: 14px;
 }
 
@@ -685,7 +879,6 @@ footer {
     position: relative;
 }
 
-/* Başlıkların altına küçük çizgi ekler */
 .footer-col h4::after {
     content: '';
     position: absolute;
@@ -713,10 +906,8 @@ footer {
 .footer-col ul li a:hover {
     color: #ff6b6b;
     padding-left: 5px;
-    /* Linkin sağa kayma efekti */
 }
 
-/* Sosyal Medya İkonları */
 .social-links a {
     display: inline-flex;
     justify-content: center;
@@ -735,7 +926,6 @@ footer {
     transform: translateY(-3px);
 }
 
-/* E-Bülten Formu */
 .newsletter-form {
     display: flex;
     margin-bottom: 20px;
@@ -763,10 +953,9 @@ footer {
 }
 
 .newsletter-form button:hover {
-    background: #e55a5a;
+    background-color: #e55a5a;
 }
 
-/* Ödeme İkonları */
 .payment-icons {
     font-size: 30px;
     color: #555;
@@ -774,7 +963,6 @@ footer {
     gap: 15px;
 }
 
-/* Alt Çubuk (Copyright) */
 .footer-bottom {
     background-color: #1a1a1a;
     text-align: center;
